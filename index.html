@@ -24,7 +24,7 @@
 			var bg = new Image();
 			bg.src = "images/bg.jpg";
 			var end = new Image();
-			bg.src = "images/bg.jpg";
+			end.src = "images/bg.jpg";
 			var score = 0;
 			var time = 60;
 			function Fish() {
@@ -89,7 +89,6 @@
 					}
 				}
 			}
-			
 			function getPointOnCanvas(x, y) {
 				var bbox = canvas.getBoundingClientRect();
 				return {
@@ -129,7 +128,7 @@
 					ctx.font = "50px 华文琥珀";
 					ctx.fillStyle = 'red';
 					ctx.fillText("时间到！！！", 260, 200);
-					ctx.fillText(score, 260, 300);
+					ctx.fillText("SCORE:" + score+"!", 260, 300);
 					clearInterval(game);
 				}
 			}, 10);
