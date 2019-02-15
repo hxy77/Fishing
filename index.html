@@ -27,11 +27,13 @@
 			end.src = "images/bg.jpg";
 			var score = 0;
 			var time = 60;
+			//鱼对象
 			function Fish() {
 				this.x = 800;
 				this.y = Math.random() * (480 - 100);
 				var randomFish = parseInt(Math.random() * 11 + 1);
 				this.score = randomFish + 1;
+				this.probability = randomFish;
 				var fish = [];
 				for (var i = 0; i < 10; i++) {
 					var fishImage = new Image();
@@ -39,8 +41,9 @@
 					fish[i] = fishImage;
 				}
 				this.frame = fish[0];
-				var interval = 70;
+				var interval = 60;
 				var lastTime = 0;
+				//鱼前进速度
 				function timeOut() {
 					var current = new Date().getTime();
 					var t = current - lastTime;
@@ -52,18 +55,22 @@
 				}
 
 				var index = 0;
+				//鱼前进步伐
 				this.step = function() {
 					if (timeOut()) {
-						this.x = this.x - 2;
+						this.x = this.x - 3;
 						this.frame = fish[index % 10];
 						index = index + 1;
 					}
 				}
+
 				this.paint = function(ctx) {
 					ctx.drawImage(this.frame, this.x, this.y);
+
 				}
 			}
 
+			//网对象
 			function Net() {
 				var NET = new Image();
 				NET.src = "images/net.png";
@@ -74,6 +81,7 @@
 				}
 			}
 
+			
 
 			canvas.onmousemove = function(e) {
 				var mpoint = getPointOnCanvas(e.x, e.y);
@@ -82,13 +90,36 @@
 			}
 
 			canvas.onclick = function() {
+
 				for (var i = 0; i < allFish.length; i++) {
-					if ((allFish[i].x > (net.x - 50) && allFish[i].x < (net.x + 160)) && (allFish[i].y > (net.y - 48) && allFish[i].y < (net.y + 160))) {
-						//增加相应的分数;
+					var n;
+					if (allFish[i].probability <= 5) {
+						n = 0.7;
+						netCatch();
+					} else if (allFish[i].probability <= 9) {
+						n = 0.5;
+						netCatch();
+					} else if (allFish[i].probability == 10) {
+						n = 0.1;
+						netCatch();
+					} else {
+						n = 0.35;
+						netCatch();
+						
+					}
+
+				}
+
+				function netCatch() {
+					if ((allFish[i].x > (net.x - 80) && allFish[i].x < (net.x + 140)) && (allFish[i].y > (net.y - 80) && allFish[i].y < (net.y + 140)) && Math.random() < n) {
+						//增加相应的分数，删除捕到的鱼;
 						score += allFish[i].score;
+						allFish.splice(i, 1);
 					}
 				}
+
 			}
+			//获取canvas上鼠标点击点的坐标
 			function getPointOnCanvas(x, y) {
 				var bbox = canvas.getBoundingClientRect();
 				return {
@@ -97,18 +128,31 @@
 				};
 			}
 
-			var allFish = [];
-			var net = new Net();
-			var num = parseInt(Math.random() * 10);
+			//控制游戏时间
 			setInterval(function() {
 				time--
 			}, 1000);
+			//时间间隔函数
+			function isActionTime(lastTime, interval) {
+				if (lastTime == 0) {
+					return true;
+				}
+				var currentTime = new Date().getTime();
+				return currentTime - lastTime >= interval;
+			}
 
+			var lastTime = 0;
+			var interval = 800;
+			var allFish = [];
+			var net = new Net();
+			var num = parseInt(Math.random() * 10);
 			var game = setInterval(function() {
 				ctx.drawImage(bg, 0, 0);
+				//显示分数
 				ctx.font = "20px 微软雅黑";
 				ctx.fillStyle = 'white';
-				ctx.fillText("SCORE:" + score, 650, 20);
+				ctx.fillText("SCORE: " + score, 650, 20);
+				//显示时间限制
 				ctx.font = "20px 微软雅黑";
 				ctx.fillStyle = 'yellow';
 				ctx.fillText("TIME:" + time, 10, 20);
@@ -119,18 +163,22 @@
 				for (var i = 0; i < allFish.length; i++) {
 					allFish[i].step();
 				}
+
 				net.paint(ctx);
-
-				allFish[allFish.length] = new Fish();
-
 				if (!time) {
 					ctx.drawImage(end, 0, 0);
 					ctx.font = "50px 华文琥珀";
 					ctx.fillStyle = 'red';
 					ctx.fillText("时间到！！！", 260, 200);
-					ctx.fillText("SCORE:" + score+"!", 260, 300);
+					ctx.fillText("SCORE:" + score + "!", 260, 300);
 					clearInterval(game);
 				}
+
+				if (!isActionTime(lastTime, interval)) {
+					return;
+				}
+				lastTime = new Date().getTime();
+				allFish[allFish.length] = new Fish();
 			}, 10);
 
 		</script>
